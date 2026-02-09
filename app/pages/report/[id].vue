@@ -211,7 +211,6 @@
 import jsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
 
-definePageMeta({ middleware: 'auth' })
 const { user } = useUserSession()
 const route = useRoute()
 const studentId = route.params.id

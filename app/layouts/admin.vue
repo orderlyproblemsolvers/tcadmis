@@ -1,11 +1,35 @@
 <template>
-  <div class="flex h-screen bg-gray-50 font-sans">
+  <div class="flex h-screen bg-gray-50 font-sans overflow-hidden">
     
-    <aside class="w-64 bg-[#09033B] text-white flex flex-col shadow-xl z-20 fixed h-full transition-all duration-300">
-      
-      <div class="p-6 border-b border-blue-900 flex items-center gap-3">
+    <header class="md:hidden fixed top-0 left-0 right-0 h-16 bg-[#09033B] text-white flex items-center justify-between px-4 z-30 shadow-md">
+      <div class="flex items-center gap-3">
         <img src="/img/logo.png" alt="TCAD Logo" class="w-8 h-8 object-contain bg-white rounded-sm" />
-        <span class="text-xl font-bold tracking-wide">Admin Portal</span>
+        <span class="text-lg font-bold tracking-wide">Admin Portal</span>
+      </div>
+      <button @click="isSidebarOpen = !isSidebarOpen" class="p-2 rounded-md hover:bg-blue-900 focus:outline-none">
+        <UIcon name="i-heroicons-bars-3" class="w-6 h-6 text-white" />
+      </button>
+    </header>
+
+    <div 
+      v-if="isSidebarOpen" 
+      @click="isSidebarOpen = false" 
+      class="fixed inset-0 bg-black/50 z-30 md:hidden transition-opacity duration-300"
+    ></div>
+
+    <aside 
+      class="fixed inset-y-0 left-0 z-40 w-64 bg-[#09033B] text-white flex flex-col shadow-xl transition-transform duration-300 ease-in-out md:translate-x-0"
+      :class="isSidebarOpen ? 'translate-x-0' : '-translate-x-full'"
+    >
+      
+      <div class="h-16 flex items-center justify-between px-6 border-b border-blue-900">
+        <div class="flex items-center gap-3">
+          <img src="/img/logo.png" alt="TCAD Logo" class="w-8 h-8 object-contain bg-white rounded-sm" />
+          <span class="text-xl font-bold tracking-wide">Admin Portal</span>
+        </div>
+        <button @click="isSidebarOpen = false" class="md:hidden p-1 rounded hover:bg-blue-900 text-gray-300 hover:text-white">
+          <UIcon name="i-heroicons-x-mark" class="w-6 h-6" />
+        </button>
       </div>
 
       <nav class="flex-1 overflow-y-auto py-6 px-3 space-y-1 custom-scrollbar">
@@ -16,6 +40,7 @@
           to="/admin/dashboard" 
           active-class="bg-blue-800 text-white shadow-md border-r-4 border-blue-400"
           class="group w-full text-left px-4 py-3 rounded-lg transition-all duration-200 flex items-center gap-3 text-gray-400 hover:bg-blue-900 hover:text-white mb-1"
+          @click="closeMobileMenu"
         >
           <UIcon name="i-heroicons-squares-2x2" class="w-5 h-5 group-hover:text-white transition-colors" />
           <span class="font-medium">Dashboard</span>
@@ -25,15 +50,27 @@
           to="/admin/register" 
           active-class="bg-blue-800 text-white shadow-md border-r-4 border-blue-400"
           class="group w-full text-left px-4 py-3 rounded-lg transition-all duration-200 flex items-center gap-3 text-gray-400 hover:bg-blue-900 hover:text-white mb-1"
+          @click="closeMobileMenu"
         >
           <UIcon name="i-heroicons-user-plus" class="w-5 h-5 group-hover:text-white transition-colors" />
           <span class="font-medium">Registration</span>
         </NuxtLink>
 
         <NuxtLink 
+          to="/admin/access-directory" 
+          active-class="bg-blue-800 text-white shadow-md border-r-4 border-blue-400"
+          class="group w-full text-left px-4 py-3 rounded-lg transition-all duration-200 flex items-center gap-3 text-gray-400 hover:bg-blue-900 hover:text-white mb-1"
+          @click="closeMobileMenu"
+        >
+          <UIcon name="i-heroicons-key" class="w-5 h-5 group-hover:text-white transition-colors" />
+          <span class="font-medium">Access PINs</span>
+        </NuxtLink>
+
+        <NuxtLink 
           to="/admin/staff" 
           active-class="bg-blue-800 text-white shadow-md border-r-4 border-blue-400"
           class="group w-full text-left px-4 py-3 rounded-lg transition-all duration-200 flex items-center gap-3 text-gray-400 hover:bg-blue-900 hover:text-white mb-4"
+          @click="closeMobileMenu"
         >
           <UIcon name="i-heroicons-users" class="w-5 h-5 group-hover:text-white transition-colors" />
           <span class="font-medium">All Staff</span>
@@ -67,6 +104,7 @@
               :to="`/admin/classes/${cls.class_name}`"
               active-class="text-blue-300 bg-blue-900/40 border-l-2 border-blue-400 pl-10"
               class="block pl-12 pr-4 py-2 text-sm text-gray-400 hover:text-white hover:bg-blue-900/30 rounded-r-lg transition-all"
+              @click="closeMobileMenu"
             >
               {{ cls.class_name }}
             </NuxtLink>
@@ -83,7 +121,7 @@
       </div>
     </aside>
 
-    <main class="flex-1 ml-64 overflow-y-auto bg-gray-50 p-8">
+    <main class="flex-1 h-full overflow-y-auto bg-gray-50 p-4 md:p-8 pt-20 md:pt-8 md:ml-64 transition-all duration-300">
       <div class="max-w-7xl mx-auto">
         <slot />
       </div>
@@ -96,10 +134,14 @@
 const { clear } = useUserSession()
 const router = useRouter()
 
-const isClassesOpen = ref(true) // Default to open for better discovery
+// UI States
+const isClassesOpen = ref(true) 
+const isSidebarOpen = ref(false) 
 
-// Fetch classes once for the sidebar navigation
-// We use a specific key to avoid re-fetching on every page load unless necessary
+const closeMobileMenu = () => {
+  isSidebarOpen.value = false
+}
+
 const { data } = await useFetch('/api/admin/dashboard-stats', { key: 'sidebar-stats' })
 const classes = computed(() => data.value?.classes || [])
 
@@ -110,7 +152,6 @@ const logout = async () => {
 </script>
 
 <style scoped>
-/* Custom Scrollbar for Sidebar */
 .custom-scrollbar::-webkit-scrollbar {
   width: 4px;
 }

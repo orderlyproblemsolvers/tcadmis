@@ -1,4 +1,6 @@
 // server/api/admin/student-manage.post.ts
+import { defineEventHandler, readBody, createError } from 'h3'
+
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   const conn = useDb()
@@ -9,6 +11,7 @@ export default defineEventHandler(async (event) => {
     // --- ACTION: DELETE ---
     if (body.action === 'delete') {
       if (!body.id) throw createError({ statusCode: 400, message: 'ID required' })
+      // TiDB supports cascading deletes if configured, but explicit is safer
       await conn.execute('DELETE FROM academic_records WHERE student_id = ?', [body.id])
       await conn.execute('DELETE FROM term_reports WHERE student_id = ?', [body.id])
       await conn.execute('DELETE FROM students WHERE id = ?', [body.id])
@@ -28,7 +31,7 @@ export default defineEventHandler(async (event) => {
         throw createError({ statusCode: 400, message: 'Name and Class are required' })
       }
 
-      // Prepare values (Convert empty strings to null for DB)
+      // Prepare values - NOW INCLUDING ACCESS_CODE
       const values = [
         body.first_name, 
         body.last_name, 
@@ -44,29 +47,29 @@ export default defineEventHandler(async (event) => {
         body.parent1_rel || null,
         body.parent2_name || null,
         body.parent2_phone || null,
-        body.parent2_rel || null
+        body.parent2_rel || null,
+        body.access_code || null // <--- ADDED THIS LINE
       ]
 
+      // The SQL Query
       const query = `
         INSERT INTO students (
           first_name, last_name, admission_number, class_level, gender, 
           dob, photo_url, allergies, special_needs,
           parent1_name, parent1_phone, parent1_rel,
-          parent2_name, parent2_phone, parent2_rel
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          parent2_name, parent2_phone, parent2_rel, 
+          access_code 
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `
 
       await conn.execute(query, values)
       
-      console.log(`[API] Success: Created student ${body.first_name}`)
+      console.log(`[API] Success: Created student ${body.first_name} with Access Code`)
       return { success: true, message: 'Student profile created successfully' }
     }
 
   } catch (error: any) {
-    // LOG THE REAL ERROR TO TERMINAL
     console.error("❌ [API ERROR] Student Manage Failed:", error)
-    
-    // Send a clean error to frontend
     throw createError({ 
       statusCode: 500, 
       message: error.message || 'Database operation failed. Check server logs.' 

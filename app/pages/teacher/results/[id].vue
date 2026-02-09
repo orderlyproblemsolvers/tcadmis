@@ -190,7 +190,6 @@
 </template>
 
 <script setup lang="ts">
-definePageMeta({ middleware: 'auth' })
 const route = useRoute()
 const studentId = route.params.id
 

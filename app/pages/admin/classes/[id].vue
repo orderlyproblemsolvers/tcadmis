@@ -125,7 +125,7 @@
 </template>
 
 <script setup lang="ts">
-definePageMeta({ layout: 'admin', middleware: 'auth' })
+definePageMeta({ layout: 'admin' })
 
 const route = useRoute()
 const router = useRouter()

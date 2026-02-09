@@ -138,6 +138,12 @@
 </template>
 
 <script setup lang="ts">
+defineOgImageComponent('TcadMis', {
+  title: 'TCAD MIS',
+  subtitle: 'Academic Excellence & Godly Education',
+  label: 'Login'
+})
+
 const { loggedIn, user, fetch: refreshSession } = useUserSession()
 const router = useRouter()
 

@@ -34,6 +34,13 @@
 
 <script setup lang="ts">
 definePageMeta({ layout: 'teacher'})
+
+defineOgImageComponent('TcadMis', {
+  title: 'Teacher Portal',
+  subtitle: 'Academic Excellence & Godly Education',
+  label: 'Teacher'
+})
+
 const { user } = useUserSession()
 const { data, pending } = await useFetch('/api/teacher/my-classes')
 const classes = computed(() => data.value?.classes || [])

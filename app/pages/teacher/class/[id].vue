@@ -82,7 +82,7 @@
 </template>
 
 <script setup lang="ts">
-definePageMeta({ layout: 'teacher', middleware: 'auth' })
+definePageMeta({ layout: 'teacher'})
 
 const route = useRoute()
 const className = route.params.id as string
