@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+@theme {
+  /* Define the TCAD Brand Colors here */
+  --color-tcad-primary: #09033B;    /* Deep Blue */
+  --color-tcad-accent: #F97316;     /* Orange */
+  --color-tcad-secondary: #38BDF8;  /* Light Blue */
+  --color-tcad-base: #FFFFFF;       /* White */
+  --color-tcad-background: #F3F4F6; /* Light Gray */
+
+  /* Define Fonts */
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+}

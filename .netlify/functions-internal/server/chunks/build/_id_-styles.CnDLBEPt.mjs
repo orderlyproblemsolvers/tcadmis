@@ -1,0 +1,2 @@
+const r=[".text-primary-dark[data-v-0a42230c]{color:#09033b}.bg-primary-dark[data-v-0a42230c]{background-color:#09033b}.border-primary-dark[data-v-0a42230c]{border-color:#09033b}.focus\\:ring-primary-dark[data-v-0a42230c]:focus{--tw-ring-color:#09033b}.focus\\:border-primary-dark[data-v-0a42230c]:focus{border-color:#09033b}.hover\\:text-primary-dark[data-v-0a42230c]:hover{color:#09033b}"];export{r as default};
+//# sourceMappingURL=_id_-styles.CnDLBEPt.mjs.map
