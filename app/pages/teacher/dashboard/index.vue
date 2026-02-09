@@ -33,7 +33,7 @@
 </template>
 
 <script setup lang="ts">
-definePageMeta({ layout: 'teacher', middleware: 'auth' })
+definePageMeta({ layout: 'teacher'})
 const { user } = useUserSession()
 const { data, pending } = await useFetch('/api/teacher/my-classes')
 const classes = computed(() => data.value?.classes || [])

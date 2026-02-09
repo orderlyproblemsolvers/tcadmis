@@ -5,7 +5,7 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   ssr: true,
-  modules: ['@nuxt/ui', 'nuxt-auth-utils', '@pinia/nuxt'],
+  modules: ['@nuxt/ui', 'nuxt-auth-utils', '@pinia/nuxt', '@nuxtjs/seo'],
    css: ['./app/assets/css/main.css'],
 
    // TCAD Branding Colors (from our previous notes)
@@ -24,24 +24,11 @@ export default defineNuxtConfig({
     minify: true
   },
 
-  // ogImage: {
-  //   enabled: true,
-  //   host: process.env.NUXT_PUBLIC_SITE_URL || 'https://mis.thecovenantacademy.org',
-  //   domains: [
-  //     'res.cloudinary.com',
-  //   ],
-  // },
-
-  image: {
-    provider: 'cloudinary',
-    cloudinary: { baseURL: 'https://res.cloudinary.com/...' },
+  ogImage: {
+    enabled: true,
+    host: process.env.NUXT_PUBLIC_SITE_URL || 'https://mis.thecovenantacademy.org',
     domains: [
-      'images.unsplash.com',
-      'i.pravatar.cc',
       'res.cloudinary.com',
-      'mis.thecovenanacademy.org',
-      'mis.thecovenantacademy.netlify.app',
-      process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000'
     ],
   },
 
