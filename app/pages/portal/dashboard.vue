@@ -99,7 +99,7 @@
       </div>
 
       <div v-if="activeTab === 'paces'">
-        <PaceTracker :student-id="student.id" mode="admin" />
+        <PaceTracker :student-id="studentIdString" mode="admin" />
       </div>
 
     </div>
@@ -129,6 +129,8 @@ watchEffect(() => {
 
 const student = computed(() => data.value?.student)
 const history = computed(() => data.value?.history || [])
+
+const studentIdString = student.value.id.toString();
 
 const handleLogout = () => {
   const token = useCookie('parent_token')

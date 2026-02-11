@@ -1,18 +1,18 @@
 <template>
-  <div class="min-h-screen bg-gray-100 p-4 print:p-0">
+  <div class="min-h-screen bg-gray-100 p-4 print:p-0 font-sans">
     
-    <div class="max-w-[297mm] mx-auto mb-4 flex justify-between items-center print:hidden">
+    <div class="max-w-[297mm] mx-auto mb-6 flex flex-col md:flex-row justify-between items-center gap-4 print:hidden">
       <NuxtLink :to="backLink" class="text-gray-600 hover:text-[#09033B] text-sm flex items-center gap-1 font-bold">
         <UIcon name="i-heroicons-arrow-left" class="w-4 h-4" />
         Back to Dashboard
       </NuxtLink>
       
-      <div class="flex gap-3 items-center">
-        <select v-model="session" class="border border-gray-300 rounded px-2 py-1 text-sm bg-white focus:ring-[#09033B]">
+      <div class="flex flex-wrap justify-center gap-3 items-center w-full md:w-auto">
+        <select v-model="session" class="border border-gray-300 rounded px-2 py-2 text-sm bg-white focus:ring-[#09033B] flex-1 md:flex-none">
           <option>2025/2026</option>
           <option>2026/2027</option>
         </select>
-        <select v-model="term" class="border border-gray-300 rounded px-2 py-1 text-sm bg-white focus:ring-[#09033B]">
+        <select v-model="term" class="border border-gray-300 rounded px-2 py-2 text-sm bg-white focus:ring-[#09033B] flex-1 md:flex-none">
           <option>1st Term</option>
           <option>2nd Term</option>
           <option>3rd Term</option>
@@ -21,110 +21,176 @@
         <button 
           @click="downloadPDF" 
           :disabled="isGenerating"
-          class="text-white px-4 py-2 rounded shadow font-bold text-sm flex items-center disabled:opacity-50 transition-all"
+          class="text-white px-6 py-2 rounded shadow font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50 transition-all w-full md:w-auto"
           style="background-color: #09033B;"
         >
-          <UIcon v-if="isGenerating" name="i-heroicons-arrow-path" class="w-4 h-4 animate-spin mr-2" />
-          <UIcon v-else name="i-heroicons-arrow-down-tray" class="w-4 h-4 mr-2" />
+          <UIcon v-if="isGenerating" name="i-heroicons-arrow-path" class="w-4 h-4 animate-spin" />
+          <UIcon v-else name="i-heroicons-arrow-down-tray" class="w-4 h-4" />
           {{ isGenerating ? 'Generating...' : 'Download PDF' }}
         </button>
       </div>
     </div>
 
-    <div ref="reportContent" class="w-[297mm] h-[210mm] mx-auto shadow-2xl relative flex" 
-         style="background-color: #ffffff; color: #000000; font-family: 'Times New Roman', Times, serif; overflow: hidden;">
+    <div class="block md:hidden max-w-md mx-auto space-y-4 pb-20">
       
-      <div style="width: 80%; margin: 7px; padding: 25px; display: flex; flex-direction: column;border-radius: 2%; border: 2px solid #000;">
-        
-       <div class="flex items-center justify-between border-b-2 pb-3 mb-3" style="border-bottom-color: #000000;">
-  <div class="flex-1 flex items-center gap-4">
-    <img 
-      id="schoolLogoMain" 
-      src="/img/logo.png" 
-      alt="TCAD Logo" 
-      class="h-14 w-14 object-contain" 
-      crossorigin="anonymous" 
-    />
-    <div>
-      <h1 style="font-size: 22px; font-weight: 900; color: #000000; margin: 0; text-transform: uppercase; font-family: 'EB Garamond', serif;">
-        The Covenant Academy
-      </h1>
-      <p style="font-size: 9px; font-weight: bold; color: #4b5563; margin: 0; letter-spacing: 1px; font-family: 'EB Garamond', serif;">
-        ......The School of Tomorrow
-      </p>
-    </div>
-  </div>
+      <div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-lg shadow-sm flex gap-3 items-start">
+        <UIcon name="i-heroicons-exclamation-triangle" class="w-6 h-6 text-amber-600 shrink-0 mt-0.5" />
+        <div class="text-sm text-amber-900">
+          <p class="font-bold">Simplified Mobile View</p>
+          <p class="leading-snug mt-1 text-xs">
+            This is a summary. For the official report with signatures, grading keys, and comments, please tap <strong class="text-black">Download PDF</strong> above.
+          </p>
+        </div>
+      </div>
 
-  <div class="text-right">
-    <div style="background-color: #000000; color: #ffffff; padding: 4px 12px; font-weight: 700; text-transform: uppercase; font-size: 11px;">
-      {{ term }} PROGRESS REPORT | {{ session }}
+      <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200" v-if="data">
+        <div class="flex items-center gap-3 mb-4">
+          <img src="/img/logo.png" class="h-12 w-12 object-contain" />
+          <div>
+            <h1 class="font-bold text-[#09033B] text-lg leading-tight">Student Profile</h1>
+            <p class="text-xs text-gray-500">{{ session }} - {{ term }}</p>
+          </div>
+        </div>
+        <div class="space-y-2 text-sm">
+          <div class="flex justify-between border-b border-gray-100 pb-1">
+            <span class="text-gray-500">Name</span>
+            <span class="font-bold text-gray-900">{{ data.student.last_name }}, {{ data.student.first_name }}</span>
+          </div>
+          <div class="flex justify-between border-b border-gray-100 pb-1">
+            <span class="text-gray-500">Class</span>
+            <span class="font-bold text-gray-900">{{ data.student.class_level }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">Admission No</span>
+            <span class="font-bold text-gray-900">{{ data.student.admission_number }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div v-for="sub in data?.academics" :key="sub.subject" class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+        <div class="mb-3 border-b border-gray-100 pb-2">
+          <h3 class="font-black text-[#09033B] text-base uppercase tracking-wide">{{ sub.subject }}</h3>
+        </div>
+        
+        <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
+          <div class="grid grid-cols-3 gap-2 mb-3 text-center">
+            <div class="flex flex-col">
+              <span class="text-[10px] text-gray-400 font-bold uppercase">1st CA</span>
+              <span class="font-bold text-gray-700 text-sm">{{ formatScore(sub.ca1) || '-' }}</span>
+            </div>
+            <div class="flex flex-col border-l border-gray-200">
+              <span class="text-[10px] text-gray-400 font-bold uppercase">2nd CA</span>
+              <span class="font-bold text-gray-700 text-sm">{{ formatScore(sub.ca2) || '-' }}</span>
+            </div>
+            <div class="flex flex-col border-l border-gray-200">
+              <span class="text-[10px] text-gray-400 font-bold uppercase">Exam</span>
+              <span class="font-bold text-gray-700 text-sm">{{ formatScore(sub.exam) || '-' }}</span>
+            </div>
+          </div>
+
+          <div class="h-px bg-gray-200 w-full mb-3"></div>
+
+          <div class="flex justify-between items-center px-2">
+            <div>
+              <span class="text-[10px] text-gray-400 font-bold uppercase block">Total Score</span>
+              <span class="font-black text-xl text-[#09033B]">{{ getDisplayTotal(sub) || '-' }}</span>
+            </div>
+            <div class="text-right">
+              <span class="text-[10px] text-gray-400 font-bold uppercase block">Grade</span>
+              <span class="inline-block bg-[#09033B] text-white text-xs font-bold px-3 py-1 rounded-full min-w-[40px] text-center">
+                {{ getDisplayTotal(sub) ? getGrade(sub.total) : '-' }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
-  </div>
-</div>
+
+
+    <div 
+      ref="reportContent" 
+      class="w-[297mm] h-[210mm] bg-white relative flex shadow-2xl mx-auto
+             fixed top-0 left-[-9999px] md:static md:left-auto md:top-auto"
+      style="color: #000000; font-family: 'Times New Roman', Times, serif; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);"
+    >
+      
+      <div style="width: 80%; margin: 7px; padding: 25px; display: flex; flex-direction: column; border-radius: 2%; border: 2px solid #000;">
+        
+        <div class="flex items-center justify-between border-b-2 pb-3 mb-3" style="border-bottom-color: #000000;">
+          <div class="flex-1 flex items-center gap-4">
+            <img 
+              id="schoolLogoMain" 
+              src="/img/logo.png" 
+              alt="TCAD Logo" 
+              class="h-14 w-14 object-contain" 
+              crossorigin="anonymous" 
+            />
+            <div>
+              <h1 style="font-size: 22px; font-weight: 900; color: #000000; margin: 0; text-transform: uppercase; font-family: 'EB Garamond', serif;">
+                The Covenant Academy
+              </h1>
+              <p style="font-size: 9px; font-weight: bold; color: #4b5563; margin: 0; letter-spacing: 1px; font-family: 'EB Garamond', serif;">
+                ......The School of Tomorrow
+              </p>
+            </div>
+          </div>
+
+          <div class="text-right">
+            <div style="background-color: #000000; color: #ffffff; padding: 4px 12px; font-weight: 700; text-transform: uppercase; font-size: 11px;">
+              {{ term }} PROGRESS REPORT | {{ session }}
+            </div>
+          </div>
+        </div>
 
         <div v-if="data" class="grid grid-cols-4 gap-2 mb-3 p-2 rounded" style="background-color: #ffffff; font-size: 10px; font-family: 'Times New Roman', Times, serif;">
-          <div class="border-r border-gray-300 pr-2">
-            <p style="color: #666; font-size: 8px; font-weight: bold;">STUDENT NAME</p>
+          <div class="border-r pr-2" style="border-color: #d1d5db;">
+            <p style="color: #666666; font-size: 8px; font-weight: bold;">STUDENT NAME</p>
             <p style="font-weight: 900; text-transform: uppercase;">{{ data.student.last_name }}, {{ data.student.first_name }}</p>
           </div>
-          <div class="border-r border-gray-300 px-2">
-            <p style="color: #666; font-size: 8px; font-weight: bold;">ADMISSION NO</p>
+          <div class="border-r px-2" style="border-color: #d1d5db;">
+            <p style="color: #666666; font-size: 8px; font-weight: bold;">ADMISSION NO</p>
             <p style="font-weight: 900;">{{ data.student.admission_number }}</p>
           </div>
-          <div class=" px-2">
-            <p style="color: #666; font-size: 8px; font-weight: bold;">CLASS</p>
+          <div class="px-2">
+            <p style="color: #666666; font-size: 8px; font-weight: bold;">CLASS</p>
             <p style="font-weight: 900;">{{ data.student.class_level }}</p>
           </div>
         </div>
 
         <div style="flex: 1;">
           <table style="width: 100%; border-collapse: collapse; font-size: 8.5px;">
-<thead>
-  <tr style="background-color: #f5f5f5;">
-    <th style=" font-weight: 800; padding: 4px; text-align: left; vertical-align: middle;">
-      SUBJECT
-    </th>
-
-    <th colspan="2" style=" font-weight: 600; padding: 2px; text-align: center;">
-      COGNITIVE 20%/40%
-    </th>
-    <th colspan="4" style=" font-weight: 600; padding: 2px; text-align: center;">
-    </th>
-
-    <th style=" font-weight: 800; text-align: center; background-color: #f5f5f5; width: 8%; vertical-align: middle;">
-      EXAM
-    </th>
-    <th style=" font-weight: 800; text-align: center; width: 8%; background-color: #ff8080; vertical-align: middle;">
-      TOTAL
-    </th>
-    <th style=" font-weight: 800; text-align: center; width: 6%; vertical-align: middle;">
-      GRADE
-    </th>
-  </tr>
-
-  <tr style="background-color: #f5f5f5; font-size: 7.5px;">
-    <th style=" border-top: none; height: 0px; padding: 0;"></th> 
-    
-    <th style="font-size: 9.5px; font-weight: 700; padding: 5px 4px; width: 8%;">1st CA</th>
-    <th style="font-size: 9.5px; font-weight: 700; padding: 5px 4px; width: 8%;">2nd CA</th>
-    <th style="font-size: 9.5px; font-weight: 700; padding: 5px 4px; width: 8%;">Assgnment</th>
-    <th style="font-size: 9.5px; font-weight: 700; padding: 5px 4px; width: 8%;">Class Exercise</th>
-    <th style="font-size: 9.5px; font-weight: 700; padding: 5px 4px; width: 8%;">Affective</th>
-    <th style="font-size: 9.5px; font-weight: 700; padding: 5px 4px; width: 8%;">Psycomotor</th>
-    <th style="font-size: 9px;  font-weight: 800; text-align: center; width: 8%; background-color: #f5f5f5; vertical-align: middle;">40/60</th>
-    <th style="font-size: 9px;  font-weight: 800; text-align: center; width: 8%; background-color: #ff8080; vertical-align: middle;">100</th>
-    <th style=" border-top: none; height: 0px; padding: 0;"></th>
-  </tr>
-</thead>
+            <thead>
+              <tr style="background-color: #f5f5f5;">
+                <th style="font-weight: 800; padding: 4px; text-align: left; vertical-align: middle;">SUBJECT</th>
+                <th colspan="2" style="font-weight: 600; padding: 2px; text-align: center;">COGNITIVE 20%/40%</th>
+                <th colspan="4" style="font-weight: 600; padding: 2px; text-align: center;"></th>
+                <th style="font-weight: 800; text-align: center; background-color: #f5f5f5; width: 8%; vertical-align: middle;">EXAM</th>
+                <th style="font-weight: 800; text-align: center; width: 8%; background-color: #ff8080; vertical-align: middle;">TOTAL</th>
+                <th style="font-weight: 800; text-align: center; width: 6%; vertical-align: middle;">GRADE</th>
+              </tr>
+              <tr style="background-color: #f5f5f5; font-size: 7.5px;">
+                <th style="border-top: none; height: 0px; padding: 0;"></th> 
+                <th style="font-size: 9.5px; font-weight: 700; padding: 5px 4px; width: 8%;">1st CA</th>
+                <th style="font-size: 9.5px; font-weight: 700; padding: 5px 4px; width: 8%;">2nd CA</th>
+                <th style="font-size: 9.5px; font-weight: 700; padding: 5px 4px; width: 8%;">Assgnment</th>
+                <th style="font-size: 9.5px; font-weight: 700; padding: 5px 4px; width: 8%;">Class Exercise</th>
+                <th style="font-size: 9.5px; font-weight: 700; padding: 5px 4px; width: 8%;">Affective</th>
+                <th style="font-size: 9.5px; font-weight: 700; padding: 5px 4px; width: 8%;">Psycomotor</th>
+                <th style="font-size: 9px; font-weight: 800; text-align: center; width: 8%; background-color: #f5f5f5; vertical-align: middle;">40/60</th>
+                <th style="font-size: 9px; font-weight: 800; text-align: center; width: 8%; background-color: #ff8080; vertical-align: middle;">100</th>
+                <th style="border-top: none; height: 0px; padding: 0;"></th>
+              </tr>
+            </thead>
             <tbody>
               <tr v-for="sub in data?.academics" :key="sub.subject" style="font-family: 'Times New Roman', Times, serif;">
-                <td style=" padding: 1.5px 5px; font-weight: 600; font-size: 11px;">{{ sub.subject }}</td>
-                <td v-for="key in ['ca1', 'ca2', 'assignment', 'class_ex', 'affective', 'psychomotor']" :key="key" style=" text-align: center; font-size: 12px;">
+                <td style="padding: 1.5px 5px; font-weight: 600; font-size: 11px;">{{ sub.subject }}</td>
+                <td v-for="key in ['ca1', 'ca2', 'assignment', 'class_ex', 'affective', 'psychomotor']" :key="key" style="text-align: center; font-size: 12px;">
                   {{ formatScore(sub[key]) }}
                 </td>
-                <td style=" font-size:12px; text-align: center; padding-bottom: 2px; font-weight: 700; background-color: #f9fafb;">{{ formatScore(sub.exam) }}</td>
-                <td style=" font-size:12px; text-align: center; padding-bottom: 2px; font-weight: 700; background-color: #ff8080;">{{ getDisplayTotal(sub) }}</td>
-                <td style=" font-size:12px; text-align: center; padding-bottom: 2px; font-weight: 700;">{{ getDisplayTotal(sub) ? getGrade(sub.total) : '' }}</td>
+                <td style="font-size:12px; text-align: center; padding-bottom: 2px; font-weight: 700; background-color: #f9fafb;">{{ formatScore(sub.exam) }}</td>
+                <td style="font-size:12px; text-align: center; padding-bottom: 2px; font-weight: 700; background-color: #ff8080;">{{ getDisplayTotal(sub) }}</td>
+                <td style="font-size:12px; text-align: center; padding-bottom: 2px; font-weight: 700;">{{ getDisplayTotal(sub) ? getGrade(sub.total) : '' }}</td>
               </tr>
               <tr v-for="i in Math.max(0, 18 - (data?.academics?.length || 0))" :key="'empty'+i">
                 <td v-for="c in 10" :key="c" style="border: 1px solid #000; height: 16px;"></td>
@@ -135,7 +201,7 @@
 
         <div style="margin-top: 10px; border-top: 2px solid #000; padding-top: 10px;">
           <div style="display: flex; gap: 20px;">
-            <div style="flex: 1; border: 1px solid #ccc; padding: 5px;">
+            <div style="flex: 1; border: 1px solid #cccccc; padding: 5px;">
               <p style="font-size: 8px; font-weight: 900; margin-bottom: 3px;">GRADING KEY</p>
               <div style="display: grid; grid-template-columns: 1fr 1fr; font-size: 7.5px; font-weight: bold;">
                 <div style="display: flex; flex-direction: column;">
@@ -167,7 +233,7 @@
           </div>
 
           <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 5px; font-family: 'Times New Roman', Times, serif;">
-             <div style="font-size: 8px; color: #555; width: 40%;">
+             <div style="font-size: 8px; color: #555555; width: 40%;">
                <p>* Class Exercise: Quiz, Debates, Projects.</p>
                <p>* Affective: Attendance, Appearance, Honesty, Punctuality.</p>
                <p>* Psychomotor: Note copying, Practicals, Clubs.</p>
@@ -183,18 +249,12 @@
 
       <div style="width: 20%; background-color: #fdfdfd; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 30px 5px; font-family: 'Times New Roman', Times, serif;">
         <div style="display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center;">
-          <h3 style="font-weight: 700; font-size: 16px; color: #000000;  text-transform: uppercase; letter-spacing: 1.5px;  padding-bottom: 5px;">The Way of <span style="background: black; color: #ffffff; padding-top: 20px; padding-bottom: 8px;">TCA</span></h3>
+          <h3 style="font-weight: 700; font-size: 16px; color: #000000; text-transform: uppercase; letter-spacing: 1.5px; padding-bottom: 5px;">The Way of <span style="background: black; color: #ffffff; padding-top: 20px; padding-bottom: 8px;">TCA</span></h3>
           <div style="display: flex; gap: 2px;">
-            <div style="width: 5px; height: 5px; background-color: #000000; border-radius: 50%;"></div>
-            <div style="width: 5px; height: 5px; background-color: #000000; border-radius: 50%;"></div>
-            <div style="width: 5px; height: 5px; background-color: #000000; border-radius: 50%;"></div>
-            <div style="width: 5px; height: 5px; background-color: #000000; border-radius: 50%;"></div>
-            <div style="width: 5px; height: 5px; background-color: #000000; border-radius: 50%;"></div>
-            <div style="width: 5px; height: 5px; background-color: #000000; border-radius: 50%;"></div>
-            <div style="width: 5px; height: 5px; background-color: #000000; border-radius: 50%;"></div>
+            <div v-for="i in 7" :key="i" style="width: 5px; height: 5px; background-color: #000000; border-radius: 50%;"></div>
           </div>
           <div v-for="(line, index) in wayOfTca" :key="index" style="display: flex; flex-direction: column; align-items: center; gap: 12px;">
-            <p style="font-size: 14px; font-weight: 500; text-transform: uppercase; color: #1e293b; margin: 0; line-height: 1.3; max-width: 150px; ">{{ line }}</p>
+            <p style="font-size: 14px; font-weight: 500; text-transform: uppercase; color: #1e293b; margin: 0; line-height: 1.3; max-width: 150px;">{{ line }}</p>
             <div v-if="index < wayOfTca.length - 1" style="width: 5px; height: 5px; background-color: #000000; border-radius: 50%;"></div>
           </div>
         </div>
@@ -209,7 +269,7 @@
 
 <script setup lang="ts">
 import jsPDF from 'jspdf'
-import html2canvas from 'html2canvas'
+import { toPng } from 'html-to-image'
 
 const { user } = useUserSession()
 const route = useRoute()
@@ -250,6 +310,20 @@ const getDisplayTotal = (sub: any) => {
   return (sub.total === 0 || sub.total === '0') ? '' : sub.total
 }
 
+// Helper to sum up CA components if needed, or just display raw CA1/CA2
+const calculateCA = (sub: any) => {
+  const caFields = ['ca1', 'ca2', 'assignment', 'class_ex', 'affective', 'psychomotor']
+  let total = 0
+  let hasScore = false
+  caFields.forEach(f => {
+    if (sub[f]) {
+      total += Number(sub[f])
+      hasScore = true
+    }
+  })
+  return hasScore ? total : '-'
+}
+
 const formatScore = (val: any) => {
   if (val === null || val === undefined || val === '' || val === 0 || val === '0') return '';
   return val;
@@ -271,57 +345,45 @@ const downloadPDF = async () => {
   isGenerating.value = true
   
   try {
-    // Wait for fonts and images to load
+    // 1. Force scroll to top-left
+    window.scrollTo(0, 0)
     await nextTick()
-    await new Promise(resolve => setTimeout(resolve, 100))
+    await new Promise(resolve => setTimeout(resolve, 500))
     
-    const element = reportContent.value
+    const element = reportContent.value as HTMLElement
     
-    // OPTIMIZED html2canvas options
-    const canvas = await html2canvas(element, {
-      scale: 4,              // ✅ Keep this - good balance of quality/performance
-      useCORS: true,         // ✅ Required for external images
-      allowTaint: false,     // ⭐ NEW - prevents tainted canvas issues
-      backgroundColor: '#ffffff',
-      logging: false,        // Set to true for debugging
-      
-      // ⭐ QUALITY IMPROVEMENTS:
-      windowWidth: element.scrollWidth,   // Capture full width
-      windowHeight: element.scrollHeight, // Capture full height
-      width: element.offsetWidth,
-      height: element.offsetHeight,
-      
-      // ⭐ RENDERING IMPROVEMENTS:
-      imageTimeout: 0,       // No timeout for image loading
-      removeContainer: true, // Clean up after rendering
-      letterRendering: true, // Better text rendering (can be slower)
-      
-      // ⭐ OPTIONAL - for very crisp text:
-      // scale: 4,           // Higher quality but slower & larger file
-      // dpi: 300,           // Doesn't exist in html2canvas, but scale handles this
+    // Explicit Dimensions for A4 Landscape @ 96 DPI approx
+    const width = element.offsetWidth
+    const height = element.offsetHeight
+
+    // 2. Generate Image using native browser rendering (toPng)
+    // This bypasses html2canvas limitations and supports modern CSS
+    const imgData = await toPng(element, {
+      quality: 1.0,
+      pixelRatio: 4, // High resolution
+      width: width,
+      height: height,
+      // CRITICAL: Reset positioning for the clone so it captures correctly
+      // even if the element is currently off-screen on mobile
+      style: {
+        transform: 'scale(1)',
+        transformOrigin: 'top left',
+        margin: '0',
+        padding: '0',
+        left: '0',
+        top: '0',
+        position: 'static' 
+      }
     })
     
-    const imgData = canvas.toDataURL('image/png', 1.0) // ⭐ 1.0 = maximum PNG quality
-    
-    // OPTIMIZED jsPDF options
     const pdf = new jsPDF({
       orientation: 'landscape',
       unit: 'mm',
       format: 'a4',
-      compress: true,  // ⭐ NEW - compress PDF (smaller file size)
-      precision: 2,    // ⭐ NEW - coordinate precision
-      hotfixes: ['px_scaling'] // ⭐ NEW - fixes pixel scaling issues
+      compress: true
     })
     
-    // ⭐ BETTER IMAGE EMBEDDING:
-    pdf.addImage(
-      imgData, 
-      'PNG', 
-      0, 0, 
-      297, 210, 
-      undefined,        // alias
-      'FAST'           // ⭐ Compression method: 'NONE', 'FAST', 'MEDIUM', 'SLOW'
-    )
+    pdf.addImage(imgData, 'PNG', 0, 0, 297, 210, undefined, 'FAST')
     
     const fileName = `${data.value?.student?.last_name || 'Report'}_Progress_Report_${session.value}_${term.value}.pdf`
     pdf.save(fileName)
@@ -336,6 +398,5 @@ const downloadPDF = async () => {
 </script>
 
 <style>
-/* Import EB Garamond from Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&display=swap');
 </style>

@@ -1,36 +1,30 @@
 // server/api/admin/student-details.get.ts
+import { defineEventHandler, getQuery, createError } from 'h3'
+
 export default defineEventHandler(async (event) => {
   const { id } = getQuery(event)
   const conn = useDb()
-
-  console.log(`[API] Fetching details for Student ID: ${id}`)
 
   if (!id) {
     throw createError({ statusCode: 400, message: 'Student ID is required' })
   }
 
   try {
-    // 1. FETCH STUDENT (Basic Info)
-    let student = null
-    try {
-      const result: any = await conn.execute('SELECT * FROM students WHERE id = ?', [id])
-      const rows = Array.isArray(result) ? result : result.rows || []
-      
-      if (rows.length > 0) {
-        student = rows[0]
-      }
-    } catch (dbErr: any) {
-      console.error('[API] Student Fetch Error:', dbErr.message)
-      throw createError({ statusCode: 500, message: `DB Error: ${dbErr.message}` })
-    }
+    // 1. Fetch Student Profile
+    // We expect exactly one record for a valid ID.
+    const studentQuery = 'SELECT * FROM students WHERE id = ?'
+    const studentRes: any = await conn.execute(studentQuery, [id])
+    const rows = Array.isArray(studentRes) ? studentRes : studentRes.rows || []
 
-    if (!student) {
+    if (rows.length === 0) {
       throw createError({ statusCode: 404, message: 'Student not found' })
     }
 
-    // 2. FETCH ACADEMIC HISTORY (Grouped by Session & Term)
-    // We group by session and term so we don't get 10 rows for 10 subjects.
-    // We treat session and term as strings (VARCHAR) which is perfectly fine.
+    const student = rows[0]
+
+    // 2. Fetch Academic History
+    // Group records by Session/Term/Class to create a summary view.
+    // We use a separate try-catch here to ensure profile loads even if history fails.
     let history = []
     try {
       const historyQuery = `
@@ -48,8 +42,9 @@ export default defineEventHandler(async (event) => {
       const historyRes: any = await conn.execute(historyQuery, [id])
       history = Array.isArray(historyRes) ? historyRes : historyRes.rows || []
       
-    } catch (historyErr: any) {
-      console.warn('[API] Warning: Could not fetch history (Table might be missing or empty):', historyErr.message)
+    } catch (historyErr) {
+      // Fail silently for history to allow profile rendering
+      // This usually happens if the academic_records table is empty or missing
     }
 
     return { 
@@ -58,9 +53,12 @@ export default defineEventHandler(async (event) => {
     }
 
   } catch (error: any) {
-    console.error('[API] Critical Error:', error)
+    // 3. Global Error Handler
+    // Re-throw known HTTP errors (like 404), wrap unknown DB errors as 500.
+    if (error.statusCode) throw error
+    
     throw createError({ 
-      statusCode: error.statusCode || 500, 
+      statusCode: 500, 
       message: error.message || 'Internal Server Error' 
     })
   }
