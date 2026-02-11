@@ -5,15 +5,61 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   ssr: true,
-  modules: ['@nuxt/ui', 'nuxt-auth-utils', '@pinia/nuxt', '@nuxtjs/seo', 'nuxt-security'],
+  modules: ['@nuxt/ui', 'nuxt-auth-utils', '@pinia/nuxt', '@nuxtjs/seo', 'nuxt-security', '@vite-pwa/nuxt'],
    css: ['./app/assets/css/main.css'],
+
+   pwa: {
+    registerType: 'autoUpdate',
+    manifest: {
+      name: 'The Covenant Academy',
+      short_name: 'TCAD',
+      description: 'The Covenant Academy Parent Portal',
+      theme_color: '#09033B',
+      background_color: '#ffffff',
+      display: 'standalone',
+      orientation: 'portrait',
+      start_url: '/portal/login', // Handles the redirect logic we discussed
+      icons: [
+        {
+          src: 'pwa-192.png',
+          sizes: '192x192',
+          type: 'image/png'
+        },
+        {
+          src: 'pwa-512.png',
+          sizes: '512x512',
+          type: 'image/png'
+        },
+        {
+          src: 'pwa-512.png', // Re-using the 512 icon for "maskable" is standard practice
+          sizes: '512x512',
+          type: 'image/png',
+          purpose: 'any maskable'
+        }
+      ]
+    },
+    workbox: {
+      navigateFallback: '/',
+      globPatterns: ['**/*.{js,css,html,png,svg,ico}'],
+    },
+    devOptions: {
+      enabled: true,
+      type: 'module',
+    },
+  },
 
    // TCAD Branding Colors (from our previous notes)
   app: {
     head: {
       title: 'The Covenant Academy MIS',
+      link: [
+        { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
+        { rel: 'icon', type: 'image/png', sizes: '192x192', href: '/pwa-192.png' } // Fallback
+      ],
       meta: [
-        { name: 'theme-color', content: '#09033B' } 
+        { name: 'theme-color', content: '#09033B' },
+        { name: 'apple-mobile-web-app-capable', content: 'yes' },
+        { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' }
       ]
     }
   },
