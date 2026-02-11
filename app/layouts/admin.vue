@@ -47,6 +47,16 @@
         </NuxtLink>
 
         <NuxtLink 
+          to="/admin/insights" 
+          active-class="bg-blue-800 text-white shadow-md border-r-4 border-blue-400"
+          class="group w-full text-left px-4 py-3 rounded-lg transition-all duration-200 flex items-center gap-3 text-gray-400 hover:bg-blue-900 hover:text-white mb-1"
+          @click="closeMobileMenu"
+        >
+          <UIcon name="i-heroicons-chart-pie" class="w-5 h-5 group-hover:text-white transition-colors" />
+          <span class="font-medium">Insights</span>
+        </NuxtLink>
+
+        <NuxtLink 
           to="/admin/register" 
           active-class="bg-blue-800 text-white shadow-md border-r-4 border-blue-400"
           class="group w-full text-left px-4 py-3 rounded-lg transition-all duration-200 flex items-center gap-3 text-gray-400 hover:bg-blue-900 hover:text-white mb-1"
@@ -115,8 +125,8 @@
 
       <div class="p-4 border-t border-blue-900 bg-[#07022e]">
         <button @click="logout" class="w-full flex items-center justify-center gap-2 text-red-300 hover:text-white hover:bg-red-900/30 py-2.5 rounded transition-colors duration-200 group">
-           <UIcon name="i-heroicons-arrow-right-on-rectangle" class="w-5 h-5 group-hover:text-red-400" />
-           <span class="text-sm font-medium">Sign Out</span>
+            <UIcon name="i-heroicons-arrow-right-on-rectangle" class="w-5 h-5 group-hover:text-red-400" />
+            <span class="text-sm font-medium">Sign Out</span>
         </button>
       </div>
     </aside>
