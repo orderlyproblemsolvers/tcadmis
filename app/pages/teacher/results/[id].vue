@@ -203,7 +203,19 @@ const message = ref('')
 const success = ref(false)
 const error = ref(false)
 
-const STANDARD_SUBJECTS = [
+// --- 1. DEFINE SUBJECT LISTS ---
+
+// List A: Lower Classes (Playgroup, Nursery, RR)
+const LOWER_CLASS_SUBJECTS = [
+  "Maths PACES", "English PACES", "Science PACES", "Soc. Stud. PACES", 
+  "Literature PACES", "World Building", "Literacy", "Numeracy", 
+  "Rhymes", "Social Studies", "Health Education", "Elementary Science", 
+  "Computer", "French", "Music", "Writing", 
+  "Civic Education", "Moral Instructions", "Fine Arts", "Bible Memory"
+]
+
+// List B: Upper Classes (Grade 1 - 6)
+const UPPER_CLASS_SUBJECTS = [
   "Maths PACES", "English PACES", "Science PACES", "Soc. Stud PACES", 
   "Literature PACES", "World Building", "Nigerian Maths", "English Language",
   "BST- Basic Sci & Tech", "BST- PHE", "BST-Comp Science", "NV-Soc. Studies",
@@ -212,9 +224,30 @@ const STANDARD_SUBJECTS = [
   "History", "Bible memory"
 ]
 
-// Initialize with empty strings instead of 0
+// --- 2. LOGIC TO SELECT LIST ---
+const getSubjectsForClass = (className: string) => {
+  if (!className) return UPPER_CLASS_SUBJECTS // Default
+
+  const lower = className.toLowerCase()
+  // Check if class matches any of the lower category keywords
+  if (
+    lower.includes('playgroup') || 
+    lower.includes('nursery') || 
+    lower.includes('reading readiness') ||
+    lower.includes('creche')
+  ) {
+    return LOWER_CLASS_SUBJECTS
+  }
+  
+  return UPPER_CLASS_SUBJECTS
+}
+
+// Initialize with empty strings based on the *current* student's class
 const generateBlankAcademics = () => {
-  return STANDARD_SUBJECTS.map(subject => ({
+  // Use the loaded student data to pick the list, or default to Upper if loading
+  const subjects = getSubjectsForClass(student.value?.student?.class_level || '')
+  
+  return subjects.map(subject => ({
     subject: subject,
     ca1: '', ca2: '', assignment: '', class_ex: '', affective: '', psychomotor: '', exam: ''
   }))
@@ -224,7 +257,7 @@ const formData = ref({
   session: '2025/2026',
   term: '1st Term',
   class_level: '', 
-  academics: generateBlankAcademics(),
+  academics: generateBlankAcademics(), // Will be regenerated once student data loads
   summary: {
     total_paces: '',
     pace_average: '',
@@ -234,6 +267,18 @@ const formData = ref({
   },
   comments: { teacher: '', principal: '' }
 })
+
+// --- 3. WATCH FOR STUDENT DATA LOAD ---
+// When student data arrives, regenerate the blank form with the CORRECT subjects
+watch(student, (newVal) => {
+  if (newVal && newVal.student) {
+    // Only regenerate if we haven't fetched results yet (to avoid overwriting data)
+    if (!formData.value.academics.length || formData.value.academics[0].subject === 'Maths PACES') {
+       formData.value.academics = generateBlankAcademics()
+    }
+  }
+}, { immediate: true })
+
 
 // --- DATA FETCHING ---
 const fetchExistingResults = async () => {
@@ -250,10 +295,14 @@ const fetchExistingResults = async () => {
       }
     })
 
+    // Determine which list to use based on the student's class
+    const subjectList = getSubjectsForClass(student.value?.student?.class_level || '')
+
     if (data.found && data.academics.length > 0) {
       const savedMap = new Map(data.academics.map((item: any) => [item.subject, item]))
 
-      formData.value.academics = STANDARD_SUBJECTS.map(subjectName => {
+      // Map over the CORRECT subject list
+      formData.value.academics = subjectList.map(subjectName => {
         if (savedMap.has(subjectName)) {
           const s = savedMap.get(subjectName)
           return {
@@ -276,7 +325,15 @@ const fetchExistingResults = async () => {
       
       formData.value.comments = data.comments
     } else {
-      resetForm(false) 
+      // No results found? Generate a blank form with the correct subjects
+      formData.value.academics = subjectList.map(subject => ({
+        subject: subject,
+        ca1: '', ca2: '', assignment: '', class_ex: '', affective: '', psychomotor: '', exam: ''
+      }))
+      
+      // Reset summary but KEEP the blank academics we just made
+      formData.value.summary = { total_paces: '', pace_average: '', reading_comprehension: '', days_absent: 0, next_term_begins: '' }
+      formData.value.comments = { teacher: '', principal: '' }
     }
 
   } catch (err) {
@@ -337,7 +394,6 @@ const saveResults = async () => {
       class_level: student.value?.student.class_level || 'Unknown'
     }
     
-
     await $fetch('/api/teacher/results', { method: 'POST', body: payload })
     
     success.value = true
@@ -351,7 +407,6 @@ const saveResults = async () => {
     saving.value = false
   }
 }
-
 </script>
 
 <style scoped>
