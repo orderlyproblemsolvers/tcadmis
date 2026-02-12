@@ -4,8 +4,6 @@ export default defineEventHandler(async (event) => {
   const session = await requireUserSession(event)
   const conn = useDb()
 
-  console.log(`[API] Fetching roster for class: ${class_name} | Teacher: ${session.user.id}`)
-
   try {
     // 1. SECURITY CHECK
     // CHANGED: We select 'name' instead of 'id' because 'id' does not exist
@@ -35,7 +33,6 @@ export default defineEventHandler(async (event) => {
     }
 
   } catch (error: any) {
-    console.error('Class Roster Error:', error)
     throw createError({ statusCode: 500, message: error.message })
   }
 })

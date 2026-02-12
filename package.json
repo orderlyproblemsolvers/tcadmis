@@ -10,6 +10,7 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@nuxt/hints": "^1.0.0-alpha.3",
     "@nuxt/image": "^2.0.0",
     "@nuxt/ui": "^4.3.0",

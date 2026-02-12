@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-8 font-sans p-6 max-w-7xl mx-auto min-h-screen">
+  <div class="space-y-8 font-sans p-6 max-w-7xl mx-auto min-h-screen relative">
     
     <div class="flex flex-col md:flex-row justify-between items-end gap-4 border-b border-gray-200 pb-6 animate-fade-in">
       <div>
@@ -29,7 +29,6 @@
     <div v-else class="space-y-8">
       
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        
         <div class="group bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 ease-out animate-slide-up" style="animation-delay: 0ms;">
           <div class="flex justify-between items-start">
             <div>
@@ -98,7 +97,6 @@
         </div>
 
         <div class="bg-[#09033B] p-8 rounded-2xl shadow-xl text-white flex flex-col justify-center relative overflow-hidden group animate-slide-up" style="animation-delay: 400ms;">
-           
            <div class="absolute -top-10 -right-10 w-40 h-40 bg-blue-500/20 rounded-full blur-3xl group-hover:bg-blue-500/30 transition-all duration-700"></div>
            <div class="absolute -bottom-10 -left-10 w-40 h-40 bg-purple-500/20 rounded-full blur-3xl group-hover:bg-purple-500/30 transition-all duration-700"></div>
 
@@ -133,7 +131,6 @@
             </h3>
             <span class="text-[10px] bg-green-50 text-green-700 px-3 py-1 rounded-full font-bold uppercase tracking-wider border border-green-100">Highest Avg</span>
           </div>
-          
           <div class="overflow-hidden rounded-xl border border-gray-100">
             <table class="min-w-full divide-y divide-gray-100">
               <thead class="bg-green-50/50">
@@ -171,7 +168,6 @@
             </h3>
             <span class="text-[10px] bg-red-50 text-red-600 px-3 py-1 rounded-full font-bold uppercase tracking-wider border border-red-100">Lowest Avg</span>
           </div>
-          
           <div class="overflow-hidden rounded-xl border border-gray-100">
             <table class="min-w-full divide-y divide-gray-100">
               <thead class="bg-red-50/50">
@@ -194,15 +190,81 @@
             </table>
           </div>
         </div>
-
       </div>
-
     </div>
+
+    <div class="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-4 print:hidden">
+      
+      <transition name="slide-up">
+        <div v-if="isChatOpen" class="bg-white w-80 md:w-96 rounded-2xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col h-[500px] animate-fade-in">
+          
+          <div class="bg-[#09033B] p-4 flex justify-between items-center text-white shadow-md z-10">
+            <div class="flex items-center gap-3">
+              <div class="relative">
+                <div class="w-2.5 h-2.5 bg-green-400 rounded-full animate-pulse"></div>
+                <div class="absolute inset-0 bg-green-400 rounded-full animate-ping opacity-75"></div>
+              </div>
+              <div>
+                <h3 class="font-bold text-sm">Insights AI</h3>
+                <p class="text-[10px] text-blue-200 font-medium">Ask about students & performance</p>
+              </div>
+            </div>
+            <button @click="isChatOpen = false" class="hover:bg-white/10 rounded-lg p-1.5 transition-colors">
+              <UIcon name="i-heroicons-x-mark" class="w-5 h-5" />
+            </button>
+          </div>
+
+          <div class="flex-1 p-4 overflow-y-auto space-y-4 bg-gray-50 scroll-smooth" ref="chatContainer">
+            <div v-for="(msg, i) in messages" :key="i" 
+              :class="['max-w-[85%] p-3.5 text-xs leading-relaxed rounded-2xl shadow-sm transition-all duration-300', 
+                msg.role === 'user' 
+                  ? 'bg-[#09033B] text-white ml-auto rounded-br-none' 
+                  : 'bg-white text-gray-700 mr-auto rounded-bl-none border border-gray-100']">
+              <div v-if="msg.role === 'assistant'" class="markdown-body" v-html="formatMessage(msg.text)"></div>
+              <span v-else>{{ msg.text }}</span>
+            </div>
+            
+            <div v-if="isThinking" class="flex gap-1.5 p-3 bg-white rounded-2xl rounded-bl-none w-16 border border-gray-100 shadow-sm">
+              <div class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"></div>
+              <div class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce delay-100"></div>
+              <div class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce delay-200"></div>
+            </div>
+          </div>
+
+          <form @submit.prevent="askAI" class="p-3 bg-white border-t border-gray-100 flex gap-2 items-center">
+            <input 
+              v-model="userQuery" 
+              placeholder="e.g., Who is the best student?" 
+              class="flex-1 text-sm border border-gray-200 focus:ring-2 focus:ring-[#09033B]/20 focus:border-[#09033B] bg-gray-50 rounded-xl px-4 py-2.5 transition-all outline-none"
+            />
+            <button type="submit" :disabled="!userQuery || isThinking" class="bg-[#09033B] text-white p-2.5 rounded-xl hover:bg-[#09033B]/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm active:scale-95">
+              <UIcon name="i-heroicons-paper-airplane" class="w-5 h-5 -rotate-45" />
+            </button>
+          </form>
+        </div>
+      </transition>
+
+      <button 
+        @click="isChatOpen = !isChatOpen"
+        class="h-14 w-14 rounded-full bg-[#09033B] text-white shadow-xl shadow-[#09033B]/30 flex items-center justify-center hover:scale-105 active:scale-95 transition-all duration-300 group z-50"
+      >
+        <div class="relative">
+          <UIcon v-if="!isChatOpen" name="i-heroicons-chat-bubble-left-right" class="w-7 h-7 group-hover:rotate-12 transition-transform" />
+          <UIcon v-else name="i-heroicons-chevron-down" class="w-7 h-7 group-hover:-translate-y-1 transition-transform" />
+          
+          <span v-if="!isChatOpen" class="absolute -top-1 -right-1 flex h-3 w-3">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+          </span>
+        </div>
+      </button>
+    </div>
+
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, nextTick } from 'vue'
 
 definePageMeta({ layout: 'admin' })
 
@@ -212,16 +274,65 @@ const { data, pending, refresh } = await useFetch('/api/admin/insights')
 const showAnimations = ref(false)
 
 onMounted(() => {
-  // Trigger bar animations after a slight delay to ensure UI is rendered
-  setTimeout(() => {
-    showAnimations.value = true
-  }, 100)
+  setTimeout(() => { showAnimations.value = true }, 100)
 })
 
 const refreshData = async () => {
-    showAnimations.value = false
-    await refresh()
-    setTimeout(() => { showAnimations.value = true }, 100)
+  showAnimations.value = false
+  await refresh()
+  setTimeout(() => { showAnimations.value = true }, 100)
+}
+
+// --- CHAT LOGIC ---
+const isChatOpen = ref(false)
+const userQuery = ref('')
+const isThinking = ref(false)
+const chatContainer = ref<HTMLElement | null>(null)
+const messages = ref<{role: string, text: string}[]>([
+  { role: 'assistant', text: 'Hello! I am your AI assistant. I have access to all student records and performance data. How can I help you analyze the school today?' }
+])
+
+const scrollToBottom = () => {
+  nextTick(() => {
+    if (chatContainer.value) {
+      chatContainer.value.scrollTo({
+        top: chatContainer.value.scrollHeight,
+        behavior: 'smooth'
+      })
+    }
+  })
+}
+
+// Basic formatter to handle newlines from AI
+const formatMessage = (text: string) => {
+  return text.replace(/\n/g, '<br>')
+}
+
+const askAI = async () => {
+  if (!userQuery.value.trim()) return
+
+  // 1. Add User Message
+  const question = userQuery.value
+  messages.value.push({ role: 'user', text: question })
+  userQuery.value = ''
+  isThinking.value = true
+  scrollToBottom()
+
+  try {
+    // 2. Send to API (which fetches all results + uses Gemini)
+    const res: any = await $fetch('/api/admin/chat', {
+      method: 'POST',
+      body: { message: question }
+    })
+
+    // 3. Add AI Response
+    messages.value.push({ role: 'assistant', text: res.reply })
+  } catch (err) {
+    messages.value.push({ role: 'assistant', text: 'I apologize, but I am having trouble connecting to the data server right now. Please try again in a moment.' })
+  } finally {
+    isThinking.value = false
+    scrollToBottom()
+  }
 }
 
 // Helper for Progress Bar Color
@@ -232,7 +343,6 @@ const getColorClass = (score: number) => {
 }
 
 // Helper for Gender Count
-// Updated to match the normalized backend (Male/Female)
 const getGenderCount = (gender: string) => {
   if (!data.value?.gender) return 0
   const g = data.value.gender.find((i: any) => i.gender === gender)
@@ -243,18 +353,12 @@ const getGenderCount = (gender: string) => {
 <style scoped>
 /* 1. Entrance Animation (Fade Up) */
 @keyframes fade-in-up {
-  0% {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
 }
 
 .animate-slide-up {
-  opacity: 0; /* Start hidden */
+  opacity: 0; 
   animation: fade-in-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
@@ -262,14 +366,25 @@ const getGenderCount = (gender: string) => {
   animation: fade-in-up 0.8s ease-out forwards;
 }
 
-/* 2. Shimmer Effect for Bars */
+/* 2. Shimmer Effect */
 @keyframes shimmer {
-  100% {
-    transform: translateX(100%);
-  }
+  100% { transform: translateX(100%); }
 }
 
 .animate-shimmer {
   animation: shimmer 2s infinite;
+}
+
+/* 3. Chat Transition */
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.slide-up-enter-from,
+.slide-up-leave-to {
+  opacity: 0;
+  transform: translateY(20px) scale(0.95);
+  transform-origin: bottom right;
 }
 </style>
