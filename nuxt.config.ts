@@ -15,7 +15,7 @@ export default defineNuxtConfig({
       short_name: 'TCAD',
       description: 'The Covenant Academy Parent Portal',
       theme_color: '#09033B',
-      background_color: '#ffffff',
+      background_color: '#09033B',
       display: 'standalone',
       orientation: 'portrait',
       start_url: '/portal/login', // Handles the redirect logic we discussed
