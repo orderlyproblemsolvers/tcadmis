@@ -207,13 +207,19 @@
 <script setup lang="ts">
 import { onBeforeRouteLeave } from 'vue-router'
 
-definePageMeta({ layout: 'admin' })
+definePageMeta({ layout: 'teacher' })
 const route = useRoute()
 const router = useRouter()
 const studentId = route.params.id
 
 // --- 1. INITIAL FETCH ---
 const { data: student } = await useFetch(`/api/teacher/student-details?id=${studentId}`)
+
+//current school year
+
+const  currentSchoolYear = ref('2025/2026')
+const currentSchoolTerm = ref('2nd Term')
+
 
 // --- 2. CONSTANTS & HELPERS ---
 const LOWER_CLASS_SUBJECTS = ["Maths PACES", "English PACES", "Science PACES", "Soc. Stud. PACES", "Literature PACES", "World Building", "Literacy", "Numeracy", "Rhymes", "Social Studies", "Health Education", "Elementary Science", "Computer", "French", "Music", "Writing", "Civic Education", "Moral Instructions", "Fine Arts", "Bible Memory"]
@@ -245,14 +251,14 @@ const focusedRow = ref(-1)
 const isDirty = ref(false)
 
 const formData = ref({
-  session: '2025/2026', term: '1st Term', class_level: '', 
+  session: '2025/2026', term: '2nd Term', class_level: '', 
   academics: generateBlankAcademics(),
   summary: { 
     total_paces: '', 
     pace_average: '', 
     reading_comprehension: '', 
     next_term_begins: '', 
-    days_absent: 0 // Reverted to simple input
+    days_absent: 0 
   },
   comments: { teacher: '', principal: '' }
 })
@@ -272,8 +278,14 @@ const handleKeyNav = (e: KeyboardEvent, rIndex: number, cIndex: number) => {
   switch(e.key) {
     case 'ArrowRight': nextCol++; break;
     case 'ArrowLeft': nextCol--; break;
-    case 'ArrowUp': nextRow--; break;
-    case 'ArrowDown': nextRow++; break;
+    case 'ArrowUp': 
+      e.preventDefault(); // FIX: Prevent number increment
+      nextRow--; 
+      break;
+    case 'ArrowDown': 
+      e.preventDefault(); // FIX: Prevent number decrement
+      nextRow++; 
+      break;
     case 'Enter': 
       e.preventDefault(); 
       nextRow++; 
