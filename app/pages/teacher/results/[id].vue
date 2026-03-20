@@ -73,7 +73,7 @@
           </div>
 
           <div class="overflow-auto max-h-[70vh] relative custom-scrollbar">
-            <table class="min-w-full border-collapse">
+            <table class="min-w-full border-collapse mb-12">
               <thead class="bg-gray-50 sticky top-0 z-20 shadow-sm">
                 <tr>
                   <th class="sticky left-0 z-30 bg-gray-50 px-4 py-3 text-left text-xs font-black text-gray-500 uppercase tracking-wider w-64 border-b border-r border-gray-200 shadow-[4px_0_8px_-4px_rgba(0,0,0,0.1)]">
@@ -106,7 +106,7 @@
                       v-model="row[field]" 
                       type="number" 
                       min="0" 
-                      :max="field === 'exam' ? 60 : 10" 
+                      :max="getMax(field)" 
                       placeholder="-"
                       @focus="focusedRow = rIndex"
                       @blur="focusedRow = -1"
@@ -114,7 +114,7 @@
                       @input="markDirty"
                       class="w-full h-9 rounded text-center text-sm font-bold focus:ring-2 focus:ring-[#09033B] focus:bg-white outline-none transition-all placeholder-gray-200 border border-transparent hover:border-gray-200"
                       :class="[
-                        validateScore(row[field], field === 'exam' ? 60 : 10) ? 'text-gray-800' : 'text-red-600 bg-red-50 border-red-300',
+                        validateScore(row[field], getMax(field)) ? 'text-gray-800' : 'text-red-600 bg-red-50 border-red-300',
                         field === 'exam' ? 'text-blue-900' : ''
                       ]"
                     />
@@ -215,9 +215,8 @@ const studentId = route.params.id
 // --- 1. INITIAL FETCH ---
 const { data: student } = await useFetch(`/api/teacher/student-details?id=${studentId}`)
 
-//current school year
-
-const  currentSchoolYear = ref('2025/2026')
+// Current school year
+const currentSchoolYear = ref('2025/2026')
 const currentSchoolTerm = ref('2nd Term')
 
 
@@ -266,8 +265,8 @@ const formData = ref({
 // --- 4. NAVIGATION LOGIC ---
 const fieldKeys = ['ca1', 'ca2', 'assignment', 'class_ex', 'affective', 'psychomotor', 'exam']
 const headers = [
-  { label: '1st CA', max: 10 }, { label: '2nd CA', max: 10 }, 
-  { label: 'Assign', max: 10 }, { label: 'Class Ex', max: 10 }, 
+  { label: '1st CA', max: 20 }, { label: '2nd CA', max: 20 },
+  { label: 'Assign', max: 10 }, { label: 'Class Ex', max: 10 },
   { label: 'Affective', max: 10 }, { label: 'Psych', max: 10 }
 ]
 
@@ -279,11 +278,11 @@ const handleKeyNav = (e: KeyboardEvent, rIndex: number, cIndex: number) => {
     case 'ArrowRight': nextCol++; break;
     case 'ArrowLeft': nextCol--; break;
     case 'ArrowUp': 
-      e.preventDefault(); // FIX: Prevent number increment
+      e.preventDefault()
       nextRow--; 
       break;
     case 'ArrowDown': 
-      e.preventDefault(); // FIX: Prevent number decrement
+      e.preventDefault()
       nextRow++; 
       break;
     case 'Enter': 
@@ -303,6 +302,12 @@ const handleKeyNav = (e: KeyboardEvent, rIndex: number, cIndex: number) => {
 }
 
 // --- 5. VALIDATION & CALCULATIONS ---
+const getMax = (field: string) => {
+  if (field === 'exam') return 60
+  if (field === 'ca1' || field === 'ca2') return 20
+  return 10
+}
+
 const validateScore = (val: any, max: number) => {
   if (val === '' || val === null) return true
   const num = Number(val)
