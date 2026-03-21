@@ -5,7 +5,7 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   ssr: true,
-  modules: ['@nuxt/ui', 'nuxt-auth-utils', '@pinia/nuxt', '@nuxtjs/seo', 'nuxt-security', '@vite-pwa/nuxt'],
+  modules: ['@nuxt/ui', 'nuxt-auth-utils', '@pinia/nuxt', '@nuxtjs/seo', 'nuxt-security', '@vite-pwa/nuxt', '@vueuse/nuxt'],
    css: ['./app/assets/css/main.css'],
 
    pwa: {

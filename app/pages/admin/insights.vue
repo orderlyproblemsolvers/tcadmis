@@ -81,24 +81,28 @@
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
-        <div class="bg-[#09033B] p-6 rounded-2xl shadow-xl text-white relative overflow-hidden group animate-slide-up" style="animation-delay: 250ms;">
-           <h3 class="font-bold mb-6 flex items-center gap-2 relative z-10">
-             <UIcon name="i-heroicons-academic-cap" class="w-5 h-5" />
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 animate-slide-up" style="animation-delay: 250ms;">
+           <h3 class="font-bold mb-6 flex items-center gap-2 text-[#09033B]">
+             <div class="p-1.5 bg-indigo-50 text-indigo-600 rounded-lg">
+               <UIcon name="i-heroicons-chart-pie" class="w-5 h-5" />
+             </div>
              Grade Distribution
            </h3>
-           <div class="space-y-3 relative z-10">
-             <div v-for="grade in data?.gradeDistribution" :key="grade.grade_band" class="flex items-center gap-4">
-               <div class="w-16 text-xs font-bold text-gray-300">{{ grade.grade_band.split(' ')[0] }}</div>
-               <div class="flex-1 h-3 bg-white/10 rounded-full overflow-hidden">
-                 <div class="h-full bg-blue-400 rounded-full transition-all duration-1000" 
-                      :style="{ width: showAnimations ? `${(grade.count / totalGrades) * 100}%` : '0%' }"></div>
-               </div>
-               <div class="w-10 text-right text-sm font-black">{{ grade.count }}</div>
-             </div>
-             <div v-if="!data?.gradeDistribution?.length" class="text-white/50 text-sm py-4">No grades recorded for this term.</div>
+           <div class="relative min-h-[300px] flex items-center justify-center">
+             <ClientOnly>
+               <apexchart 
+                 v-if="data?.gradeDistribution?.length"
+                 type="donut" 
+                 width="100%" 
+                 :options="gradeChartOptions" 
+                 :series="gradeChartSeries" 
+               />
+               <div v-else class="text-gray-400 text-sm italic py-12">No grades recorded.</div>
+               <template #fallback>
+                 <div class="animate-pulse flex space-x-4"><div class="rounded-full bg-slate-200 h-48 w-48 mx-auto"></div></div>
+               </template>
+             </ClientOnly>
            </div>
-           <div class="absolute -top-10 -right-10 w-40 h-40 bg-blue-500/20 rounded-full blur-3xl group-hover:bg-blue-500/30 transition-all duration-700 pointer-events-none"></div>
-           <div class="absolute -bottom-10 -left-10 w-40 h-40 bg-purple-500/20 rounded-full blur-3xl group-hover:bg-purple-500/30 transition-all duration-700 pointer-events-none"></div>
         </div>
 
         <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-200 animate-slide-up" style="animation-delay: 300ms;">
@@ -108,21 +112,20 @@
             </div>
             Subject Performance Overview
           </h3>
-          <div class="space-y-4 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
-            <div v-for="sub in data?.subjectPerformance" :key="sub.subject" class="space-y-1.5 group">
-              <div class="flex justify-between text-xs font-bold">
-                <span class="text-gray-600 group-hover:text-[#09033B] transition-colors">{{ sub.subject }}</span>
-                <span :class="getScoreColorText(sub.avg_score)">{{ sub.avg_score }}%</span>
-              </div>
-              <div class="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-                <div class="h-full rounded-full transition-all duration-[1500ms]"
-                     :class="getColorClass(sub.avg_score)"
-                     :style="{ width: showAnimations ? `${sub.avg_score}%` : '0%' }"></div>
-              </div>
-            </div>
-            <div v-if="!data?.subjectPerformance?.length" class="text-gray-400 text-sm text-center py-8">
-               No subject data available for this selection.
-            </div>
+          <div class="min-h-[300px]">
+            <ClientOnly>
+              <apexchart 
+                v-if="data?.subjectPerformance?.length"
+                type="bar" 
+                height="320" 
+                :options="subjectChartOptions" 
+                :series="subjectChartSeries" 
+              />
+              <div v-else class="text-gray-400 text-sm text-center py-12 italic">No subject data available.</div>
+              <template #fallback>
+                 <div class="animate-pulse space-y-4 py-4"><div class="h-8 bg-slate-200 rounded w-3/4"></div><div class="h-8 bg-slate-200 rounded w-full"></div><div class="h-8 bg-slate-200 rounded w-5/6"></div></div>
+              </template>
+            </ClientOnly>
           </div>
         </div>
 
@@ -138,25 +141,17 @@
             Average Performance by Class
           </h3>
           
-          <div class="space-y-5 max-h-[250px] overflow-y-auto pr-2 custom-scrollbar">
-            <div v-for="(cls, index) in data?.classPerformance" :key="cls.class_level" class="space-y-2 group">
-              <div class="flex justify-between text-xs font-bold">
-                <span class="text-gray-500 group-hover:text-[#09033B] transition-colors">{{ cls.class_level }}</span>
-                <span class="text-[#09033B]">{{ cls.avg_score }}%</span>
-              </div>
-              <div class="h-3 w-full bg-gray-100 rounded-full overflow-hidden">
-                <div 
-                  class="h-full rounded-full transition-all duration-[1500ms] ease-out relative group-hover:opacity-90"
-                  :class="getColorClass(cls.avg_score)"
-                  :style="{ width: showAnimations ? `${cls.avg_score}%` : '0%' }"
-                >
-                  <div class="absolute top-0 left-0 bottom-0 right-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full animate-shimmer"></div>
-                </div>
-              </div>
-            </div>
-            <div v-if="!data?.classPerformance?.length" class="text-gray-400 text-sm text-center py-8">
-               No academic data to display.
-            </div>
+          <div class="min-h-[300px]">
+            <ClientOnly>
+              <apexchart 
+                v-if="data?.classPerformance?.length"
+                type="bar" 
+                height="300" 
+                :options="classChartOptions" 
+                :series="classChartSeries" 
+              />
+              <div v-else class="text-gray-400 text-sm text-center py-12 italic">No academic data to display.</div>
+            </ClientOnly>
           </div>
         </div>
 
@@ -166,11 +161,11 @@
              Gender Distribution
            </h3>
            <div class="space-y-4">
-             <div class="bg-white rounded-xl p-5 flex items-center justify-between shadow-sm border border-gray-100">
+             <div class="bg-white rounded-xl p-5 flex items-center justify-between shadow-sm border border-gray-100 hover:-translate-y-1 transition-transform">
                <div class="text-xs uppercase font-bold text-blue-500 tracking-widest">Boys</div>
                <div class="text-3xl font-black text-[#09033B]">{{ getGenderCount('Male') }}</div>
              </div>
-             <div class="bg-white rounded-xl p-5 flex items-center justify-between shadow-sm border border-gray-100">
+             <div class="bg-white rounded-xl p-5 flex items-center justify-between shadow-sm border border-gray-100 hover:-translate-y-1 transition-transform">
                <div class="text-xs uppercase font-bold text-pink-500 tracking-widest">Girls</div>
                <div class="text-3xl font-black text-[#09033B]">{{ getGenderCount('Female') }}</div>
              </div>
@@ -261,7 +256,6 @@
         <div class="absolute inset-0 bg-[#09033B]/40 backdrop-blur-sm" @click="closeModal"></div>
         
         <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl relative z-10 overflow-hidden flex flex-col max-h-[90vh] animate-slide-up">
-          
           <div class="p-6 border-b border-gray-100 flex justify-between items-start bg-gray-50/50">
             <div>
               <div class="flex items-center gap-3 mb-1">
@@ -298,11 +292,6 @@
                      class="flex items-center justify-between p-4 rounded-xl border border-gray-100 hover:border-gray-300 transition-colors bg-white shadow-sm">
                   <span class="font-bold text-gray-700">{{ record.subject }}</span>
                   <div class="flex items-center gap-4">
-                    <div class="w-32 h-2 bg-gray-100 rounded-full overflow-hidden hidden sm:block">
-                      <div class="h-full rounded-full" 
-                           :class="getColorClass(record.total_score)"
-                           :style="{ width: `${record.total_score}%` }"></div>
-                    </div>
                     <span class="font-black w-12 text-right" :class="getScoreColorText(record.total_score)">
                       {{ record.total_score }}%
                     </span>
@@ -375,11 +364,6 @@
         <div class="relative">
           <UIcon v-if="!isChatOpen" name="i-heroicons-chat-bubble-left-right" class="w-7 h-7 group-hover:rotate-12 transition-transform" />
           <UIcon v-else name="i-heroicons-chevron-down" class="w-7 h-7 group-hover:-translate-y-1 transition-transform" />
-          
-          <span v-if="!isChatOpen" class="absolute -top-1 -right-1 flex h-3 w-3">
-            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-            <span class="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
-          </span>
         </div>
       </button>
     </div>
@@ -394,10 +378,9 @@ definePageMeta({ layout: 'admin' })
 
 // 1. STATE & FILTERS
 const selectedSession = ref('2025/2026')
-const selectedTerm = ref('1st Term') // Default matches option exactly
+const selectedTerm = ref('1st Term') 
 const selectedClass = ref('All')
 
-// Exact classes provided
 const schoolClasses = [
   'Playgroup', 'Nursery 1', 'Nursery 2', 'Reading Readiness',
   'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6'
@@ -408,40 +391,20 @@ const { data, pending, refresh } = await useFetch('/api/admin/insights', {
   query: computed(() => ({
     session: selectedSession.value,
     term: selectedTerm.value,
-    class_level: selectedClass.value
+    class_level: selectedClass.value,
+    refresh: 'true' // Forces a bypass of cache on manual refresh
   })),
   watch: false
 })
 
-// 3. ANIMATION LOGIC
-const showAnimations = ref(false)
-
-onMounted(() => {
-  setTimeout(() => { showAnimations.value = true }, 100)
-})
-
 const refreshData = async () => {
-  showAnimations.value = false
   await refresh()
-  setTimeout(() => { showAnimations.value = true }, 100)
 }
-
-// 4. COMPUTED HELPERS
-const totalGrades = computed(() => {
-  if (!data.value?.gradeDistribution) return 1
-  return data.value.gradeDistribution.reduce((acc: number, curr: any) => acc + curr.count, 0)
-})
 
 const getGenderCount = (gender: string) => {
   if (!data.value?.gender) return 0
   const g = data.value.gender.find((i: any) => i.gender === gender)
-  return g ? g.count : 0
-}
-
-const getColorClass = (score: number) => {
-  if (score >= 75) return 'bg-green-500'
-  if (score >= 50) return 'bg-yellow-500'
-  return 'bg-red-500'
+  return g ? Number(g.count) : 0
 }
 
 const getScoreColorText = (score: number) => {
@@ -450,7 +413,99 @@ const getScoreColorText = (score: number) => {
   return 'text-red-600'
 }
 
-// 5. MODAL LOGIC (New)
+// ==========================================
+// APEXCHARTS COMPUTED CONFIGURATIONS
+// ==========================================
+
+// 1. GRADE DISTRIBUTION (DONUT)
+const gradeChartSeries = computed(() => {
+  return data.value?.gradeDistribution?.map((g: any) => Number(g.count)) || []
+})
+
+const gradeChartOptions = computed(() => {
+  return {
+    chart: { type: 'donut', fontFamily: 'inherit' },
+    labels: data.value?.gradeDistribution?.map((g: any) => g.grade_band) || [],
+    colors: ['#22c55e', '#3b82f6', '#8b5cf6', '#f59e0b', '#64748b', '#ef4444'], // Custom palette
+    plotOptions: {
+      pie: {
+        donut: { size: '70%', labels: { show: true, total: { show: true, label: 'Total Grades' } } }
+      }
+    },
+    dataLabels: { enabled: false },
+    legend: { position: 'bottom' },
+    stroke: { show: false }
+  }
+})
+
+// 2. SUBJECT PERFORMANCE (HORIZONTAL BAR)
+const subjectChartSeries = computed(() => {
+  return [{
+    name: 'Class Average',
+    data: data.value?.subjectPerformance?.map((s: any) => Number(s.avg_score)) || []
+  }]
+})
+
+const subjectChartOptions = computed(() => {
+  return {
+    chart: { type: 'bar', toolbar: { show: false }, fontFamily: 'inherit' },
+    plotOptions: {
+      bar: { horizontal: true, borderRadius: 4, dataLabels: { position: 'top' } }
+    },
+    colors: ['#3b82f6'],
+    dataLabels: {
+      enabled: true,
+      offsetX: 20,
+      style: { fontSize: '12px', colors: ['#64748b'] },
+      formatter: (val: number) => val + '%'
+    },
+    xaxis: {
+      categories: data.value?.subjectPerformance?.map((s: any) => s.subject) || [],
+      max: 100,
+      labels: { formatter: (val: number) => val + '%' }
+    },
+    grid: { xaxis: { lines: { show: true } }, yaxis: { lines: { show: false } } }
+  }
+})
+
+// 3. CLASS PERFORMANCE (COLUMN BAR)
+const classChartSeries = computed(() => {
+  return [{
+    name: 'Average Score',
+    data: data.value?.classPerformance?.map((c: any) => Number(c.avg_score)) || []
+  }]
+})
+
+const classChartOptions = computed(() => {
+  return {
+    chart: { type: 'bar', toolbar: { show: false }, fontFamily: 'inherit' },
+    plotOptions: {
+      bar: { borderRadius: 4, columnWidth: '50%', dataLabels: { position: 'top' } }
+    },
+    colors: ['#09033B'],
+    dataLabels: {
+      enabled: true,
+      offsetY: -20,
+      style: { fontSize: '12px', colors: ['#09033B'] },
+      formatter: (val: number) => val + '%'
+    },
+    xaxis: {
+      categories: data.value?.classPerformance?.map((c: any) => c.class_level) || [],
+      axisBorder: { show: false },
+      axisTicks: { show: false }
+    },
+    yaxis: {
+      max: 100,
+      labels: { formatter: (val: number) => val + '%' }
+    },
+    grid: { show: false }
+  }
+})
+
+// ==========================================
+// MODAL & CHAT LOGIC
+// ==========================================
+
 const selectedStudent = ref<any>(null)
 const studentRecords = ref<any>([])
 const isModalLoading = ref(false)
@@ -459,9 +514,7 @@ const openModal = async (student: any) => {
   selectedStudent.value = student
   isModalLoading.value = true
   studentRecords.value = []
-
   try {
-    // We use student.student_id if it exists, otherwise fallback to student.id
     const res: any = await $fetch('/api/admin/student-term-results', {
       query: {
         student_id: student.student_id || student.id,
@@ -482,7 +535,6 @@ const closeModal = () => {
   studentRecords.value = []
 }
 
-// 6. CHAT LOGIC
 const isChatOpen = ref(false)
 const userQuery = ref('')
 const isThinking = ref(false)
@@ -494,21 +546,15 @@ const messages = ref<{role: string, text: string}[]>([
 const scrollToBottom = () => {
   nextTick(() => {
     if (chatContainer.value) {
-      chatContainer.value.scrollTo({
-        top: chatContainer.value.scrollHeight,
-        behavior: 'smooth'
-      })
+      chatContainer.value.scrollTo({ top: chatContainer.value.scrollHeight, behavior: 'smooth' })
     }
   })
 }
 
-const formatMessage = (text: string) => {
-  return text.replace(/\n/g, '<br>')
-}
+const formatMessage = (text: string) => text.replace(/\n/g, '<br>')
 
 const askAI = async () => {
   if (!userQuery.value.trim()) return
-
   const question = userQuery.value
   messages.value.push({ role: 'user', text: question })
   userQuery.value = ''
@@ -520,17 +566,12 @@ const askAI = async () => {
       method: 'POST',
       body: { 
         message: question,
-        context: {
-          session: selectedSession.value,
-          term: selectedTerm.value,
-          class_level: selectedClass.value
-        }
+        context: { session: selectedSession.value, term: selectedTerm.value, class_level: selectedClass.value }
       }
     })
-
     messages.value.push({ role: 'assistant', text: res.reply })
   } catch (err) {
-    messages.value.push({ role: 'assistant', text: 'I apologize, but I am having trouble connecting to the data server right now. Please try again in a moment.' })
+    messages.value.push({ role: 'assistant', text: 'I apologize, but I am having trouble connecting right now.' })
   } finally {
     isThinking.value = false
     scrollToBottom()
@@ -539,7 +580,6 @@ const askAI = async () => {
 </script>
 
 <style scoped>
-/* Core Animations */
 @keyframes fade-in-up {
   0% { opacity: 0; transform: translateY(20px); }
   100% { opacity: 1; transform: translateY(0); }
@@ -554,50 +594,14 @@ const askAI = async () => {
   animation: fade-in-up 0.8s ease-out forwards;
 }
 
-@keyframes shimmer {
-  100% { transform: translateX(100%); }
-}
+.fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
 
-.animate-shimmer {
-  animation: shimmer 2s infinite;
-}
+.slide-up-enter-active, .slide-up-leave-active { transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+.slide-up-enter-from, .slide-up-leave-to { opacity: 0; transform: translateY(20px) scale(0.95); transform-origin: bottom right; }
 
-/* Modal & Fade Transitions */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-/* Chat Transitions */
-.slide-up-enter-active,
-.slide-up-leave-active {
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.slide-up-enter-from,
-.slide-up-leave-to {
-  opacity: 0;
-  transform: translateY(20px) scale(0.95);
-  transform-origin: bottom right;
-}
-
-/* Custom Scrollbar for Lists */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 4px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: #f1f5f9; 
-  border-radius: 4px;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #cbd5e1; 
-  border-radius: 4px;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8; 
-}
+.custom-scrollbar::-webkit-scrollbar { width: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 </style>
