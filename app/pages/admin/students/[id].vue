@@ -221,10 +221,10 @@ const showToast = (msg: string, type: 'success' | 'error' = 'success') => {
   toastMessage.value = msg; toastType.value = type;
   setTimeout(() => toastMessage.value = '', 3000)
 }
-
+const config = useRuntimeConfig()
 // Config
-const CLOUD_NAME = 'dkw2vy90z'
-const UPLOAD_PRESET = 'tcad_students'
+const CLOUD_NAME = config.public.cloudinaryCloudName
+const UPLOAD_PRESET = config.public.cloudinaryUploadPreset
 const allClasses = ['Playgroup', 'Nursery 1', 'Nursery 2', 'Reading Readiness', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6', 'Graduated']
 
 // State

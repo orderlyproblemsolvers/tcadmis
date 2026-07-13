@@ -91,6 +91,10 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
+    public: {
+      cloudinaryCloudName: process.env.CLOUDINARY_CLOUD_NAME,
+      cloudinaryUploadPreset: process.env.CLOUDINARY_UPLOAD_PRESET
+    },
     // Private keys (server-side only)
     JWT_SECRET: process.env.JWT_SECRET,
     tidbHost: process.env.TIDB_HOST,
