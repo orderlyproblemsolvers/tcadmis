@@ -21,8 +21,8 @@
            <div class="flex flex-col">
              <label class="text-[10px] font-bold text-gray-400 uppercase mb-1">Session</label>
              <select v-model="formData.session" class="border border-gray-300 rounded-lg px-3 py-2 text-sm font-bold focus:ring-2 focus:ring-[#09033B] outline-none">
-               <option>2025/2026</option>
                <option>2026/2027</option>
+               <option>2025/2026</option>
              </select>
            </div>
            <div class="flex flex-col">
@@ -216,8 +216,8 @@ const studentId = route.params.id
 const { data: student } = await useFetch(`/api/teacher/student-details?id=${studentId}`)
 
 // Current school year
-const currentSchoolYear = ref('2025/2026')
-const currentSchoolTerm = ref('2nd Term')
+const currentSchoolYear = ref('2026/2027')
+const currentSchoolTerm = ref('3rd Term')
 
 
 // --- 2. CONSTANTS & HELPERS ---
