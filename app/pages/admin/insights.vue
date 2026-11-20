@@ -8,6 +8,7 @@
       </div>
       <div class="flex flex-wrap gap-2">
         <select v-model="selectedSession" @change="refreshData" class="border border-gray-200 rounded-xl px-4 py-2 text-sm font-bold bg-white focus:ring-2 focus:ring-[#09033B] hover:border-[#09033B] transition-colors cursor-pointer shadow-sm">
+          <option value="2026/2027">2026/2027</option>
           <option value="2025/2026">2025/2026</option>
           <option value="2024/2025">2024/2025</option>
         </select>
@@ -378,7 +379,7 @@ import { ref, computed, nextTick } from 'vue'
 definePageMeta({ layout: 'admin' })
 
 // ─── STATE ────────────────────────────────────────────────
-const selectedSession  = ref('2025/2026')
+const selectedSession  = ref('2026/2027')
 const selectedTerm     = ref('1st Term')
 const selectedClass    = ref('All')
 const subjectChartType = ref('treemap') // Default to treemap
