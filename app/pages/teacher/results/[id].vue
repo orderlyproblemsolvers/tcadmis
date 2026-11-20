@@ -217,7 +217,7 @@ const { data: student } = await useFetch(`/api/teacher/student-details?id=${stud
 
 // Current school year
 const currentSchoolYear = ref('2026/2027')
-const currentSchoolTerm = ref('3rd Term')
+const currentSchoolTerm = ref('1st Term')
 
 
 // --- 2. CONSTANTS & HELPERS ---
@@ -250,7 +250,7 @@ const focusedRow = ref(-1)
 const isDirty = ref(false)
 
 const formData = ref({
-  session: '2025/2026', term: '2nd Term', class_level: '', 
+  session: '2026/2027', term: '1st Term', class_level: '', 
   academics: generateBlankAcademics(),
   summary: { 
     total_paces: '', 
